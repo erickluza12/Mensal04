@@ -1,75 +1,110 @@
-📘 Mensal04 – Sistema de Cadastro
+📘 Sistema Mensal 04 — Java + MySQL + Swing
 
-Este projeto é um sistema simples de cadastro de clientes utilizando:
+Sistema desktop desenvolvido em Java (Swing) com persistência em MySQL, utilizando DAO, MVC, hash seguro com BCrypt, e busca automática de endereço via API ViaCEP.
+Projeto criado para fins acadêmicos e estruturado para ser fácil de instalar, rodar e apresentar.
 
-Java 21
-IntelliJ IDEA
-MySQL
-Maven
-Swing (interface gráfica)
+🚀 Funcionalidades
+👤 Autenticação (Login com BCrypt)
 
-Este README explica exatamente como rodar o projeto em qualquer PC, mesmo que não tenha variáveis de ambiente configuradas.
+Tela de login modal (bloqueia o sistema até o usuário autenticar).
+Cadastro de novos usuários.
+Senhas armazenadas com hash BCrypt (segurança real).
 
-🚀 1. Requisitos
-Para rodar o sistema, você precisa ter instalado:
-✔ Java JDK 21 ou superior
-✔ IntelliJ IDEA (Community ou Ultimate)
-✔ MySQL Server
-✔ MySQL Workbench (opcional)
+🧾 Clientes
 
-🗄️ 2. Criando o Banco de Dados
-Após abrir o MySQL (Terminal ou Workbench), execute:
+Cadastro de clientes.
+Busca de CEP automática integrada ao ViaCEP.
+Edição completa de clientes.
+Remoção de clientes.
+Listagem com filtro por nome e tabela não editável.
 
+🏗️ Arquitetura
+
+MVC organizado.
+DAOs independentes.
+Conexão via ConnectionFactory.
+Telas feitas em Swing com navegação estruturada.
+
+🛠️ Como Instalar
+1️⃣ Clone o repositório
+git clone https://github.com/erickluza12/Mensal04.git
+cd Mensal04
+
+🗄️ Configuração do MySQL
+2️⃣ Crie o banco
 CREATE DATABASE mensal04;
 USE mensal04;
 
-CREATE TABLE endereco (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    rua VARCHAR(120),
-    bairro VARCHAR(80),
-    cidade VARCHAR(80),
-    cep VARCHAR(9)
-);
-
+3️⃣ Crie as tabelas
+🧍‍♂️ Tabela cliente
 CREATE TABLE cliente (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(150) NOT NULL,
-    cpf VARCHAR(14) NOT NULL UNIQUE,
-    rg VARCHAR(12),
-    ip VARCHAR(50),
+    nome VARCHAR(100),
+    cpf VARCHAR(15),
+    rg VARCHAR(20),
     endereco_id INT,
     FOREIGN KEY (endereco_id) REFERENCES endereco(id)
 );
 
-🔑 3. Configuração de Acesso ao Banco (Modo Faculdade)
-O arquivo ConnectionFactory já está configurado para funcionar em qualquer computador, usando uma senha fixa:
+🏠 Tabela endereco
+CREATE TABLE endereco (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    rua VARCHAR(100),
+    bairro VARCHAR(50),
+    cidade VARCHAR(50),
+    cep VARCHAR(10)
+);
 
-package mensal04.dao;
+🔐 Tabela usuario
+CREATE TABLE usuario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(50) UNIQUE,
+    senha VARCHAR(255),
+    status VARCHAR(10)
+);
 
-import java.sql.Connection;
-import java.sql.DriverManager;
+⚙️ Configure o ConnectionFactory
 
-public class ConnectionFactory {
+Edite o arquivo:
+src/main/java/mensal04/dao/ConnectionFactory.java
 
-    public static Connection getConnection() {
-        try {
-            String url = "jdbc:mysql://localhost:3306/mensal04";
-            String user = "root";
-            String pass = "1234"; // Senha padrão utilizada na faculdade
+E coloque seu usuário/senha do MySQL:
 
-            return DriverManager.getConnection(url, user, pass);
+private static final String URL = "jdbc:mysql://localhost:3306/mensal04";
+private static final String USER = "root";        // seu usuário
+private static final String PASS = "sua_senha";   // sua senha
 
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao conectar no banco: " + e.getMessage());
-        }
-    }
-}
+📦 Dependências (Maven)
+
+O projeto já inclui no pom.xml:
+MySQL Connector
+OkHttp + JSON (ViaCEP)
+BCrypt 0.4
+
+Nada precisa ser instalado manualmente.
+
+▶️ Como Rodar o Sistema
+
+Basta executar:
+
+Main.java
 
 
-📦 4. Rodando o Projeto no IntelliJ
-1️⃣ Abra o IntelliJ
-2️⃣ Clique em File > Open
-3️⃣ Selecione a pasta Mensal04 (o projeto)
-4️⃣ Aguarde o Maven baixar as dependências
-5️⃣ Execute o arquivo:
-src/main/java/mensal04/main/main.java
+Localização:
+
+src/main/java/mensal04/main/Main.java
+
+Este projeto inclui:
+
+✔ Swing bem organizado
+✔ Fluxo completo de CRUD
+✔ Login com BCrypt
+✔ Consumo de API real (ViaCEP)
+✔ Padrão MVC
+✔ DAO limpo
+✔ Banco relacional (MySQL)
+
+📌 Autor
+
+Erick L.
+Projeto desenvolvido para fins acadêmicos.
