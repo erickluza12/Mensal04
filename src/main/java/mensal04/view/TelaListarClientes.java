@@ -10,13 +10,13 @@ import java.util.List;
 
 public class TelaListarClientes extends JFrame {
 
-    private JTable tabela;
+    JTable tabela;
     private DefaultTableModel modelo;
-    private JTextField campoBusca;
+    JTextField campoBusca;
 
     public TelaListarClientes() {
-        setTitle("Listar / Remover Clientes");
-        setSize(700, 400);
+        setTitle("Listar Clientes");
+        setSize(750, 450);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -27,7 +27,7 @@ public class TelaListarClientes extends JFrame {
     private void initComponents() {
         setLayout(new BorderLayout());
 
-        // Painel superior com campo de busca
+        // Painel superior (busca)
         JPanel painelTopo = new JPanel(new BorderLayout());
         campoBusca = new JTextField();
         JButton botaoBuscar = new JButton("Buscar");
@@ -35,44 +35,63 @@ public class TelaListarClientes extends JFrame {
         painelTopo.add(new JLabel("Buscar cliente por nome: "), BorderLayout.WEST);
         painelTopo.add(campoBusca, BorderLayout.CENTER);
         painelTopo.add(botaoBuscar, BorderLayout.EAST);
-
         add(painelTopo, BorderLayout.NORTH);
 
-        // Tabela
-        modelo = new DefaultTableModel(new Object[]{"ID", "Nome", "CPF", "Endereço"}, 0);
+        // Tabela não editável
+        modelo = new DefaultTableModel(new Object[]{"ID", "Nome", "CPF", "Endereço"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
+        };
+
         tabela = new JTable(modelo);
+        tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
         add(new JScrollPane(tabela), BorderLayout.CENTER);
 
-        // Painel inferior com botão remover
+        // Painel inferior com botões
         JPanel painelInferior = new JPanel();
-        JButton botaoRemover = new JButton("Remover Selecionado");
-        painelInferior.add(botaoRemover);
+
+        JButton btnEditar = new JButton("Editar");
+        JButton btnRemover = new JButton("Remover");
+
+        painelInferior.add(btnEditar);
+        painelInferior.add(btnRemover);
 
         add(painelInferior, BorderLayout.SOUTH);
 
         // Eventos
-        //Filtra a pesquisa em tempo real
         campoBusca.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 carregarTabela(campoBusca.getText());
             }
         });
-        //Remove cliente selecionado
-        botaoRemover.addActionListener(e -> removerSelecionado());
+
+        botaoBuscar.addActionListener(e -> carregarTabela(campoBusca.getText()));
+        btnRemover.addActionListener(e -> removerSelecionado());
+        btnEditar.addActionListener(e -> editarSelecionado());
     }
 
-    private void carregarTabela(String filtro) {
+    public void carregarTabela(String filtro) {
         ClienteDAO dao = new ClienteDAO();
         List<Cliente> lista = dao.buscarPorNome(filtro);
 
-        modelo.setRowCount(0); // limpar tabela
+        modelo.setRowCount(0);
 
         for (Cliente c : lista) {
+
+            String enderecoFmt =
+                    c.getEndereco().getRua() + ", " +
+                            c.getEndereco().getBairro() + ", " +
+                            c.getEndereco().getCidade() +
+                            " - CEP " + c.getEndereco().getCep();
+
             modelo.addRow(new Object[]{
                     c.getId(),
                     c.getNome(),
                     c.getCpf(),
-                    c.getEndereco()
+                    enderecoFmt
             });
         }
     }
@@ -88,19 +107,36 @@ public class TelaListarClientes extends JFrame {
             return;
         }
 
-        String cpf = tabela.getValueAt(linha, 2).toString();
+        int id = Integer.parseInt(tabela.getValueAt(linha, 0).toString());
 
         int confirm = JOptionPane.showConfirmDialog(
                 this,
-                "Tem certeza que deseja remover o cliente?",
-                "Confirmar remoção",
+                "Deseja remover o cliente ID " + id + "?",
+                "Confirmar Remoção",
                 JOptionPane.YES_NO_OPTION
         );
 
         if (confirm == JOptionPane.YES_OPTION) {
             ClienteDAO dao = new ClienteDAO();
-            dao.removerPorCPF(cpf);
-            carregarTabela(campoBusca.getText()); // recarrega tabela
+            dao.remover(id);
+            carregarTabela(campoBusca.getText());
         }
+    }
+
+    private void editarSelecionado() {
+        int linha = tabela.getSelectedRow();
+
+        if (linha == -1) {
+            JOptionPane.showMessageDialog(this,
+                    "Selecione um cliente para editar!",
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        int id = Integer.parseInt(tabela.getValueAt(linha, 0).toString());
+
+        TelaEditarCliente telaEdicao = new TelaEditarCliente(id, this);
+        telaEdicao.setVisible(true);
     }
 }
