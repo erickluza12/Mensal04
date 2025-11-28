@@ -1,111 +1,84 @@
-📘 Sistema Mensal 04 — Java + MySQL + Swing
+📘 Mensal04 – Sistema de Cadastro de Clientes com Login e Foto (Java + MySQL)
 
-Sistema desktop desenvolvido em Java (Swing) com persistência em MySQL, utilizando DAO, MVC, hash seguro com BCrypt, e busca automática de endereço via API ViaCEP.
-Projeto criado para fins acadêmicos e estruturado para ser fácil de instalar, rodar e apresentar.
+Este projeto é um sistema desktop desenvolvido em Java (Swing) com MySQL, contendo:
 
-🚀 Funcionalidades
-👤 Autenticação (Login com BCrypt)
+Tela de Login com BCrypt
+Cadastro de usuário
+Cadastro de clientes
+Busca automática de endereço via API ViaCEP
+Lista/edição/remoção de clientes
+Upload de foto (salva no banco como Base64)
+DAO organizado por pacotes (MVC)
 
-Tela de login modal (bloqueia o sistema até o usuário autenticar).
-Cadastro de novos usuários.
-Senhas armazenadas com hash BCrypt (segurança real).
 
-🧾 Clientes
+🛠️ Tecnologias Utilizadas
 
-Cadastro de clientes.
-Busca de CEP automática integrada ao ViaCEP.
-Edição completa de clientes.
-Remoção de clientes.
-Listagem com filtro por nome e tabela não editável.
+Java 21
+Swing (GUI)
+MySQL 8
+BCrypt (hash de senha)
+API ViaCEP
+Maven
 
-🏗️ Arquitetura
+🧩 Requisitos
 
-MVC organizado.
-DAOs independentes.
-Conexão via ConnectionFactory.
-Telas feitas em Swing com navegação estruturada.
+MySQL instalado
+Driver do MySQL (o Maven baixa automaticamente)
+JDK 21 ou superior
 
-🛠️ Como Instalar
-1️⃣ Clone o repositório
-git clone https://github.com/erickluza12/Mensal04.git
-cd Mensal04
+🗄️ Configuração do Banco de Dados
 
-🗄️ Configuração do MySQL
-2️⃣ Crie o banco
-CREATE DATABASE mensal04;
+Abra o MySQL Workbench ou o terminal e execute:
+
+✔️ 1. Criar o banco
+CREATE DATABASE IF NOT EXISTS mensal04;
 USE mensal04;
 
-3️⃣ Crie as tabelas
-🧍‍♂️ Tabela cliente
-CREATE TABLE cliente (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100),
-    cpf VARCHAR(15),
-    rg VARCHAR(20),
-    endereco_id INT,
-    FOREIGN KEY (endereco_id) REFERENCES endereco(id)
+✔️ 2. Criar tabela de endereços
+CREATE TABLE IF NOT EXISTS endereco (
+id INT AUTO_INCREMENT PRIMARY KEY,
+rua VARCHAR(100),
+bairro VARCHAR(100),
+cidade VARCHAR(100),
+cep VARCHAR(20)
 );
 
-🏠 Tabela endereco
-CREATE TABLE endereco (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    rua VARCHAR(100),
-    bairro VARCHAR(50),
-    cidade VARCHAR(50),
-    cep VARCHAR(10)
+✔️ 3. Criar tabela de clientes (ATUALIZADA COM FOTO)
+CREATE TABLE IF NOT EXISTS cliente (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nome VARCHAR(100) NOT NULL,
+cpf VARCHAR(20),
+rg VARCHAR(20),
+endereco_id INT,
+foto_base64 LONGTEXT,
+FOREIGN KEY (endereco_id) REFERENCES endereco(id)
 );
 
-🔐 Tabela usuario
-CREATE TABLE usuario (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) UNIQUE,
-    senha VARCHAR(255),
-    status VARCHAR(10)
+
+📌 A foto é salva no formato Base64, ocupando um LONGTEXT.
+
+✔️ 4. Criar tabela de usuários (login com BCrypt)
+CREATE TABLE IF NOT EXISTS usuario (
+id INT AUTO_INCREMENT PRIMARY KEY,
+nome VARCHAR(50) NOT NULL UNIQUE,
+senha VARCHAR(255) NOT NULL,
+status VARCHAR(10) DEFAULT 'ATIVO'
 );
 
-⚙️ Configure o ConnectionFactory
+🔐 Login e Segurança
 
-Edite o arquivo:
-src/main/java/mensal04/dao/ConnectionFactory.java
+O sistema utiliza BCrypt para armazenar senhas seguras.
+Senha digitada → BCrypt.hashpw
+Validação no login → BCrypt.checkpw
+Nenhuma senha é armazenada em texto puro.
 
-E coloque seu usuário/senha do MySQL:
+🖼️ Fotos dos Clientes
 
-private static final String URL = "jdbc:mysql://localhost:3306/mensal04";
-private static final String USER = "root";        // seu usuário
-private static final String PASS = "sua_senha";   // sua senha
-
-📦 Dependências (Maven)
-
-O projeto já inclui no pom.xml:
-MySQL Connector
-OkHttp + JSON (ViaCEP)
-BCrypt 0.4
-
-Nada precisa ser instalado manualmente.
-
-▶️ Como Rodar o Sistema
-
-Basta executar:
-
-Main.java
+O sistema permite escolher uma imagem no computador.
+O arquivo é convertido para Base64 e armazenado no MySQL na coluna foto_base64.
+A imagem não é exibida no sistema, apenas armazenada (exigência do projeto).
 
 
-Localização:
+📎 Autor
 
-src/main/java/mensal04/main/Main.java
-
-Este projeto inclui:
-
-✔ Swing bem organizado
-✔ Fluxo completo de CRUD
-✔ Login com BCrypt
-✔ Consumo de API real (ViaCEP)
-✔ Padrão MVC
-✔ DAO limpo
-✔ Banco relacional (MySQL)
-
-📌 Autor
-
-Erick L.
-
-Projeto desenvolvido para fins acadêmicos.
+Projeto desenvolvido por Erick L.

@@ -1,4 +1,6 @@
 package mensal04.model;
+import java.util.Base64;
+
 
 public class Cliente {
 
@@ -7,6 +9,12 @@ public class Cliente {
     private String cpf;
     private String rg;
     private Endereco endereco;
+    private byte[] foto;
+
+    public byte[] getFoto() { return foto; }
+    public void setFoto(byte[] foto) { this.foto = foto; }
+
+
 
     public int getId() {
         return id;
@@ -42,4 +50,5 @@ public class Cliente {
     public void setEndereco(Endereco endereco) {
         this.endereco = endereco;
     }
+
 }

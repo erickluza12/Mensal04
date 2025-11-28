@@ -8,20 +8,23 @@ import mensal04.service.ViaCEPService;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.nio.file.Files;
 
 public class TelaCadastrarCliente extends JFrame {
 
     private JTextField campoNome;
     private JFormattedTextField campoCPF;
-    private JFormattedTextField campoRG;
+    private JTextField campoRG;
     private JTextField campoCEP;
     private JTextField campoRua;
     private JTextField campoBairro;
     private JTextField campoCidade;
+    private byte[] fotoSelecionada = null; // foto em bytes
 
     public TelaCadastrarCliente() {
         setTitle("Cadastrar Cliente");
-        setSize(450, 450);
+        setSize(450, 520);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -29,18 +32,14 @@ public class TelaCadastrarCliente extends JFrame {
     }
 
     private void initComponents() {
-        setLayout(new GridLayout(11, 2, 5, 5));
+        setLayout(new GridLayout(12, 2, 5, 5));
 
-        //------------------------
-        // LINHA 1 - Nome
-        //------------------------
+        // Nome
         add(new JLabel("Nome:"));
         campoNome = new JTextField();
         add(campoNome);
 
-        //------------------------
-        // LINHA 2 - CPF (com máscara)
-        //------------------------
+        // CPF
         add(new JLabel("CPF:"));
         try {
             javax.swing.text.MaskFormatter maskCPF = new javax.swing.text.MaskFormatter("###.###.###-##");
@@ -51,9 +50,7 @@ public class TelaCadastrarCliente extends JFrame {
         }
         add(campoCPF);
 
-        //------------------------
-        // LINHA 3 - RG (com máscara)
-        //------------------------
+        // RG
         add(new JLabel("RG:"));
         try {
             javax.swing.text.MaskFormatter maskRG = new javax.swing.text.MaskFormatter("##.###.###-#");
@@ -64,122 +61,123 @@ public class TelaCadastrarCliente extends JFrame {
         }
         add(campoRG);
 
-        //------------------------
-        // LINHA 4 - CEP + botão
-        //------------------------
-        add(new JLabel("CEP:"));
 
+        // CEP
+        add(new JLabel("CEP:"));
         JPanel painelCEP = new JPanel(new BorderLayout());
         campoCEP = new JTextField();
-        JButton btnBuscarCEP = new JButton("Buscar");
-
+        JButton btnBuscarCEP = new JButton("Buscar CEP");
         painelCEP.add(campoCEP, BorderLayout.CENTER);
         painelCEP.add(btnBuscarCEP, BorderLayout.EAST);
         add(painelCEP);
 
-        //------------------------
-        // LINHA 5 - Rua
-        //------------------------
+        // Rua
         add(new JLabel("Rua:"));
         campoRua = new JTextField();
         campoRua.setEditable(false);
         add(campoRua);
 
-        //------------------------
-        // LINHA 6 - Bairro
-        //------------------------
+        // Bairro
         add(new JLabel("Bairro:"));
         campoBairro = new JTextField();
         campoBairro.setEditable(false);
         add(campoBairro);
 
-        //------------------------
-        // LINHA 7 - Cidade
-        //------------------------
+        // Cidade
         add(new JLabel("Cidade:"));
         campoCidade = new JTextField();
         campoCidade.setEditable(false);
         add(campoCidade);
 
-        //------------------------
-        // LINHA 8 - Espaço
-        //------------------------
+        // Foto
+        add(new JLabel("Foto do Cliente:"));
+        JButton btnFoto = new JButton("Selecionar Foto");
+        add(btnFoto);
+
+        // Espaço
         add(new JLabel(""));
         add(new JLabel(""));
 
-        //------------------------
-        // LINHA 9 - Botões
-        //------------------------
-        add(new JLabel("")); // alinhamento
+        // Botões finais
+        JButton btnSalvar = new JButton("Salvar Cliente");
+        JButton btnCancelar = new JButton("Cancelar");
 
-        JPanel painelBotoes = new JPanel(new GridLayout(1, 2, 10, 0));
-        JButton botaoSalvar = new JButton("Salvar Cliente");
-        JButton botaoCancelar = new JButton("Cancelar");
+        add(btnSalvar);
+        add(btnCancelar);
 
-        painelBotoes.add(botaoSalvar);
-        painelBotoes.add(botaoCancelar);
-
-        add(painelBotoes);
-
-        //------------------------
         // EVENTOS
-        //------------------------
         btnBuscarCEP.addActionListener(e -> buscarCEP());
-        botaoSalvar.addActionListener(e -> salvarCliente());
-        botaoCancelar.addActionListener(e -> dispose());
+        btnFoto.addActionListener(e -> selecionarFoto());
+        btnSalvar.addActionListener(e -> salvarCliente());
+        btnCancelar.addActionListener(e -> dispose());
     }
 
-    private void buscarCEP() {
-        String cep = campoCEP.getText().trim();
+    // ========================================
+    // SELECIONAR FOTO
+    // ========================================
+    private void selecionarFoto() {
+        JFileChooser chooser = new JFileChooser();
+        int result = chooser.showOpenDialog(this);
 
-        if (cep.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Digite um CEP!");
-            return;
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File arquivo = chooser.getSelectedFile();
+            try {
+                fotoSelecionada = Files.readAllBytes(arquivo.toPath());
+                JOptionPane.showMessageDialog(this, "Foto carregada com sucesso!");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Erro ao carregar foto: " + e.getMessage());
+            }
         }
+    }
 
+    // ========================================
+    // BUSCAR CEP
+    // ========================================
+    private void buscarCEP() {
         try {
-            Endereco endereco = ViaCEPService.buscarCEP(cep);
-
+            Endereco endereco = ViaCEPService.buscarCEP(campoCEP.getText().trim());
             campoRua.setText(endereco.getRua());
             campoBairro.setText(endereco.getBairro());
             campoCidade.setText(endereco.getCidade());
-
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "CEP inválido ou não encontrado!");
+            JOptionPane.showMessageDialog(this, "CEP inválido!");
         }
     }
 
+    // ========================================
+    // SALVAR CLIENTE
+    // ========================================
     private void salvarCliente() {
 
         if (campoNome.getText().trim().isEmpty() ||
-                campoCPF.getText().contains("_") ||
-                campoRG.getText().contains("_") ||
+                campoCPF.getText().trim().isEmpty() ||
+                campoRG.getText().trim().isEmpty() ||
                 campoCEP.getText().trim().isEmpty()) {
 
-            JOptionPane.showMessageDialog(this, "Preencha todos os campos corretamente!");
+            JOptionPane.showMessageDialog(this, "Preencha todos os campos obrigatórios!");
             return;
         }
 
         try {
-            // Salvar endereço
-            Endereco e = new Endereco();
-            e.setRua(campoRua.getText());
-            e.setBairro(campoBairro.getText());
-            e.setCidade(campoCidade.getText());
-            e.setCep(campoCEP.getText());
+            // ----- Endereço -----
+            Endereco end = new Endereco();
+            end.setRua(campoRua.getText());
+            end.setBairro(campoBairro.getText());
+            end.setCidade(campoCidade.getText());
+            end.setCep(campoCEP.getText());
 
             EnderecoDAO endDAO = new EnderecoDAO();
-            int enderecoID = endDAO.salvar(e);
-            e.setId(enderecoID);
+            int enderecoID = endDAO.salvar(end);
+            end.setId(enderecoID);
 
-            // Criar cliente
+            // ----- Cliente -----
             Cliente c = new Cliente();
             c.setNome(campoNome.getText());
             c.setCpf(campoCPF.getText());
             c.setRg(campoRG.getText());
-            c.setEndereco(e);
+            c.setEndereco(end);
+            c.setFoto(fotoSelecionada); // salva foto em byte[]
 
-            // Salvar cliente
             ClienteDAO cliDAO = new ClienteDAO();
             cliDAO.salvar(c);
 
@@ -187,8 +185,7 @@ public class TelaCadastrarCliente extends JFrame {
             dispose();
 
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Erro ao salvar cliente: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Erro ao salvar cliente: " + ex.getMessage());
         }
     }
 }
